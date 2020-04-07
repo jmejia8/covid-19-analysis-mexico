@@ -1,7 +1,7 @@
 import CSV
 using DataFrames, GLM
 using Plots
-pyplot(legend=false)
+pyplot(legend=true, size = (640, 480))
 
 
 function main()
@@ -15,20 +15,21 @@ function main()
 
     @show p
     @show r
-    probit = glm(@formula(VER_D ~ Day), table, NegativeBinomial(r, p), LogLink())
+    probit = glm(@formula(Deceased ~ Day), table, NegativeBinomial(r, p), LogLink())
     
     days = table[end, :Day]:table[end, :Day] + 7
     infected= predict(probit, DataFrame(:Day => days))
     
     
-    p = plot(xlabel = "Day", ylabel = "Death")
-    plot!(table[!, :VER_D ])
+    p = plot(xlabel = "Days since 1th positive case", title="Mexico", ylabel = "Num. of Deceased")
+    plot!(table[!, :Deceased ], label = "Official data")
     # plot!(table[!, :Pos ])
-    plot!(days, infected, markershape=:o)
+    plot!(days, infected, markershape=:o, label="Approx. data")
 
     for i in 1:7
         annotate!(days[i], infected[i], text("$(5+i)/04/2020", :red, :right, 8))
     end
+    savefig(p, "Deceased.png")
     p
 end
 
